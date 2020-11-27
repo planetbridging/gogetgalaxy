@@ -76,6 +76,28 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		//page_loaded = true
 	}*/
 
+	if r.URL.Path == "/countries"{
+		cards := "<div class='card-group'>"
+		for _, s := range LstWorld {
+			//fmt.Println(i, s.country)
+			cards += country_card(s.country,s.count)
+		}
+
+		cards += "</div>"
+		fmt.Fprint(w,cards)
+	}
+
+}
+
+func country_card(country string, count int) string{
+	card := "<div class='card text-white bg-dark mb-3' style='width: 18rem;'>"
+	card += "<div class='card-header'>" + country + "</div>"
+	card += "<ul class='list-group list-group-flush'>";
+
+	card += "<li class='list-group-item text-white bg-dark'>Count: "+strconv.Itoa(count)+"</li>"
+
+	card += "</ul></div>";
+	return card
 }
 
 func writeImage(w http.ResponseWriter, img *image.Image) {

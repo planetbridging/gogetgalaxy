@@ -21,12 +21,14 @@ type ObjPort struct{
 type ObjComputer struct{
   ip string
   o_port []ObjPort
+  complete int
 }
 
 type ObjCountry struct{
   country string
   LstComputers[] ObjComputer
   count int
+  complete int
 }
 
 var LstWorld[] ObjCountry
@@ -208,7 +210,7 @@ func read_File_test(){
 func load_country(tmp_country string){
 
   obj_country := ObjCountry{
-
+    country: tmp_country,
   }
 
   file, err := os.Open("countries/"+tmp_country+".txt")
@@ -230,6 +232,7 @@ func load_country(tmp_country string){
         tmp_ip := ObjComputer{
           ip: i,
           //o_port: tmp_ports,
+          complete: 0,
         }
         obj_country.LstComputers = append(obj_country.LstComputers,tmp_ip )
       }
@@ -245,5 +248,5 @@ func load_country(tmp_country string){
   }
 
   fmt.Println("Total: " + strconv.Itoa(obj_country.count))
-  time.Sleep(10 * time.Second)
+  LstWorld = append(LstWorld,obj_country)
 }
