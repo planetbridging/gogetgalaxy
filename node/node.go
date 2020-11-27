@@ -32,7 +32,7 @@ var ports_sa = "nmap -sA -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate
 /*
 
 nmap --mtu 64 -p- -T4 -sS --max-parallelism 100 --min-rate 10000 192.168.1.1 	
-
+nmap -Pn -sS --mtu 64 -p - --max-parallelism 100 -vvv --min-rate 10000 pressback.space
 
 
 
