@@ -12,10 +12,88 @@ import (
 	//test nmap max with cpu
 	"io/ioutil"
     "strconv"
-    "strings"
+	"strings"
+	
+	//cmd
+	"log"
+	"os/exec"
+	"sync"
 )
 
-func main() {
+//static nmap cmds
+//ping
+var icmp_pe = "nmap -PE -sn -oG - "
+var icmp_pp = "nmap -PP -sn -oG - "
+var icmp_pm = "nmap -PM -sn -oG - "
+//port scan
+var ports_ss = "nmap -sS -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
+var ports_st = "nmap -sT -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
+var ports_sa = "nmap -sA -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
+/*
+
+nmap --mtu 64 -p- -T4 -sS --max-parallelism 100 --min-rate 10000 192.168.1.1 	
+
+
+
+
+c := "nmap -sS -p 53,80,443,8081,8443 -sV -T4 -oX - 192.168.1.1"
+
+*/
+
+func main(){
+
+}
+
+
+//----------------------------------------cmd
+
+func multi_cmd_wait(){
+	messages := make(chan string)
+    var wg sync.WaitGroup
+
+    // you can also add these one at 
+    // a time if you need to 
+
+
+	
+	for i := 1; i <= 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			//time.Sleep(time.Second * 3)
+			cmd_wait := cmd("nmap -p - -sS -oX - 192.168.1.1")
+			messages <- cmd_wait
+		}()
+	}
+
+	go func() {
+        for i := range messages {
+            fmt.Println(i)
+        }
+	}()
+
+    wg.Wait()
+}
+
+func cmd(c string) string{
+
+	command := strings.Split(c, " ")
+	if len(command) < 2 {
+		// TODO: handle error
+	}
+	cmd := exec.Command(command[0], command[1:]...)
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		// TODO: handle error more gracefully
+		log.Fatal(err)
+	}
+	// do something with output
+	fmt.Println(c + " done")
+	return string(stdoutStderr)
+}
+
+
+func get_cpu() {
     idle0, total0 := get_CPU_Sample()
     time.Sleep(3 * time.Second)
     idle1, total1 := get_CPU_Sample()
@@ -26,6 +104,8 @@ func main() {
 
     fmt.Printf("CPU usage is %f%% [busy: %f, total: %f]\n", cpuUsage, totalTicks-idleTicks, totalTicks)
 }
+
+//----------------------------------------check cpu
 
 func get_CPU_Sample() (idle, total uint64) {
     contents, err := ioutil.ReadFile("/proc/stat")
