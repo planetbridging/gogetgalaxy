@@ -85,6 +85,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		cards += "</div>"
 		fmt.Fprint(w,cards)
+	}else if r.URL.Path == "/ready"{
+		fmt.Fprint(w,get_available())
 	}
 
 }

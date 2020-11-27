@@ -32,8 +32,33 @@ type ObjCountry struct{
 }
 
 var LstWorld[] ObjCountry
+var world_pos int = 0
 
 
+//--------------------------------get ip not scanned yet
+// complete codes
+// -1   = busy
+// 1    = complete
+// 0    = empty
+// -2   = something broke
+func get_available() string{
+  if len(LstWorld) >= 1{
+    if len(LstWorld[0].LstComputers) >= 1{
+      if world_pos >= len(LstWorld[0].LstComputers){
+        world_pos = 0
+      }
+      tmp_num := LstWorld[0].LstComputers[world_pos]
+      if tmp_num.complete != -1 && tmp_num.complete != 1{
+        LstWorld[0].LstComputers[world_pos].complete = -1
+        world_pos += 1
+        return tmp_num.ip
+      } 
+    }
+  }
+  return ""
+}
+
+//--------------------------------get ip not scanned yet
 
 /*func main() {
   //all ip in world 4,294,967,296
@@ -250,3 +275,4 @@ func load_country(tmp_country string){
   fmt.Println("Total: " + strconv.Itoa(obj_country.count))
   LstWorld = append(LstWorld,obj_country)
 }
+
