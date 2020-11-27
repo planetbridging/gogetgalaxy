@@ -29,6 +29,7 @@ type ObjCountry struct{
   LstComputers[] ObjComputer
   count int
   complete int
+  busy int
 }
 
 var LstWorld[] ObjCountry
@@ -50,6 +51,7 @@ func get_available() string{
       tmp_num := LstWorld[0].LstComputers[world_pos]
       if tmp_num.complete != -1 && tmp_num.complete != 1{
         LstWorld[0].LstComputers[world_pos].complete = -1
+        LstWorld[0].busy += 1
         world_pos += 1
         return tmp_num.ip
       } 
