@@ -26,9 +26,9 @@ var icmp_pe = "nmap -PE -sn -oG - "
 var icmp_pp = "nmap -PP -sn -oG - "
 var icmp_pm = "nmap -PM -sn -oG - "
 //port scan
-var ports_ss = "nmap -sS -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
-var ports_st = "nmap -sT -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
-var ports_sa = "nmap -sA -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000"
+var ports_ss = "nmap -Pn -sS -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000 "
+var ports_st = "nmap -Pn -sT -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000 "
+var ports_sa = "nmap -Pn -sA -oG - --mtu 64 -p- -T4 --max-parallelism 100 --min-rate 10000 "
 /*
 
 nmap --mtu 64 -p- -T4 -sS --max-parallelism 100 --min-rate 10000 192.168.1.1 	
@@ -41,38 +41,66 @@ c := "nmap -sS -p 53,80,443,8081,8443 -sV -T4 -oX - 192.168.1.1"
 */
 
 func main(){
+    found := ping("declair.in")
+    if found{
 
+    }
 }
 
 
 //----------------------------------------cmd
+func ping(ip string)bool{
 
-func multi_cmd_wait(){
-	messages := make(chan string)
+	pe := icmp_pe + ip
+	pp := icmp_pp + ip
+	pm := icmp_pm + ip
+	
+	
+
+	lst_tmp_ping:= []string{pe,pp,pm}
+	fmt.Println(lst_tmp_ping)
+
+    results := multi_cmd_wait(lst_tmp_ping)
+	for _, r := range results{
+        if strings.Contains(r,"Status: Up"){
+            return true
+        }
+        //fmt.Println(r)
+    }
+    return false
+}
+
+func multi_cmd_wait(lstcmds []string)[]string{
+	//fmt.Println(lstcmds)
+	messages := make(chan string,len(lstcmds))
+	lst_results := []string{}
     var wg sync.WaitGroup
 
-    // you can also add these one at 
-    // a time if you need to 
-
-
-	
-	for i := 1; i <= 20; i++ {
+	for _, i := range lstcmds {
+	//for i := 0; i < len(lstcmds); i++{
+		//fmt.Println(i + "ffs")
+		tmp := i
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			//time.Sleep(time.Second * 3)
-			cmd_wait := cmd("nmap -p - -sS -oX - 192.168.1.1")
+			
+			cmd_wait := cmd(tmp)
 			messages <- cmd_wait
 		}()
 	}
 
 	go func() {
         for i := range messages {
-            fmt.Println(i)
+			//fmt.Println(i)
+			lst_results = append(lst_results,i)
         }
 	}()
 
-    wg.Wait()
+	wg.Wait()
+
+	return lst_results
+	
 }
 
 func cmd(c string) string{
