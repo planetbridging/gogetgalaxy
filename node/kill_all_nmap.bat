@@ -1,0 +1,1 @@
+taskkill /im nmap.exe /t /f

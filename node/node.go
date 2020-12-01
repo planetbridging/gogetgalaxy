@@ -18,18 +18,27 @@ import (
 	"log"
 	"os/exec"
     "sync"
+    "context"
+    "regexp"
+    
 
     //tcp client
     "bufio"
 	"io"
-	"net"
-
+    "net"
 )
 
 type result struct {
     data string
     err string // you must use error type here
 }
+
+type Response struct {
+    data   interface{}
+    status bool
+  }
+
+var os_type = ""
 
 //static nmap cmds
 //ping
@@ -40,6 +49,8 @@ var icmp_pm = "nmap -PM -sn -oG - "
 var ports_ss = "nmap -Pn -sS -oG - --min-rate 10000 --top-ports 1000 "
 var ports_st = "nmap -Pn -sT -oG - --min-rate 10000 --top-ports 1000 "
 var ports_sa = "nmap -Pn -sA -oG - --min-rate 10000 --top-ports 1000 "
+//windows get cpu usage
+var windwows_cpu = "wmic cpu get loadpercentage"
 
 func main(){
     /*scan_ip := "192.168.1.1"
@@ -49,13 +60,122 @@ func main(){
     }*/
     
    //fmt.Println(cmd(ports_sa+scan_ip))
-   tcp_client()
+   //tcp_client()
+   cpu_load_test()
 }
+
+func cpu_load_test(){
+    cpu_load := ""
+    if runtime.GOOS == "windows" {
+        os_type = "windows"
+        cpu_load = "get_cpu_usage.bat"
+    }else if runtime.GOOS == "linux"{
+        os_type = "linux"
+    }
+
+    max_cpu_limit := 70
+    tested_cpu_limit := 0
+    nmap_max_scans := 0
+    break_loop := false
+
+    for n := 1; n < 10; n++{
+        try_amount := n * 20
+        
+        
+        //go test_time_out(try_amount)
+        for n := 1; n <= try_amount; n++{
+            go cmd("nmap -sT -p- 127.0.0.1")
+        }
+        
+    
+        for i := 0; i < 5; i++{
+            time.Sleep(2 * time.Second)
+            cpu_finished := cmd(cpu_load)
+            fmt.Println(cpu_finished)
+            //clean := strings.Replace(cpu_finished, "LoadPercentage", "", -1)
+            //cpu_amount, _ := strconv.Atoi(clean)
+            
+            //fmt.Println(cpu_amount)
+            fmt.Println("yay"+cpu_finished + "wtf")
+            scanner := bufio.NewScanner(strings.NewReader(cpu_finished))
+            for scanner.Scan() {
+    
+                reg, err := regexp.Compile("[^0-9]+")
+                if err != nil {
+                    log.Fatal(err)
+                }
+                processedString := reg.ReplaceAllString(scanner.Text(), "")
+    
+                
+                if processedString != ""{
+                    fmt.Println("start"+processedString+"end")
+                    tmp_amount,_ := strconv.Atoi(processedString)
+                    if tmp_amount >= max_cpu_limit{
+                        break_loop = true
+                    }else if tmp_amount > tested_cpu_limit{
+                        tested_cpu_limit = tmp_amount
+                        nmap_max_scans = try_amount
+                    }
+                }
+            }
+        } 
+    
+        time.Sleep(5 * time.Second)
+        if os_type == "windows"{
+            fmt.Println("killing all nmap tasks")
+            //keep crashing
+            //cmd("taskkill /im nmap.exe /t /f")
+            go cmd("kill_all_nmap.bat")
+            time.Sleep(5 * time.Second)
+        }
+        if break_loop{
+            break
+        }
+        fmt.Println("Cpu nmap limit: ",nmap_max_scans)
+    }
+   
+    fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
+}
+//----------------------------------------cpu usage testing
+func test_time_out(test_amount int){
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    ch := make(chan Response, 1)
+
+    go func() {
+
+        var lst_test_cmds [] string
+
+        for i := 0; i < test_amount; i++{
+            lst_test_cmds = append(lst_test_cmds,"nmap -sT -p- 127.0.0.1")
+        }
+        multi_cmd_wait(lst_test_cmds)
+        //time.Sleep(10 * time.Second)
+
+        select {
+        default:
+            ch <- Response{data: "data", status: true}
+        case <-ctx.Done():
+            fmt.Println("Canceled by timeout")
+            return
+        }
+    }()
+
+    select {
+    case <-ch:
+        fmt.Println("Read from ch")
+    case <-time.After(20 * time.Second):
+        fmt.Println("Timed out")
+    }
+}
+//----------------------------------------tcp connection
 
 func tcp_client() {
 	con, err := net.Dial("tcp", "0.0.0.0:4849")
 	if err != nil {
-		log.Fatalln(err)
+        fmt.Println(err)
+        return
 	}
 	defer con.Close()
  
@@ -204,7 +324,8 @@ func cmd(c string) string{
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		// TODO: handle error more gracefully
-		log.Fatal(err)
+        //log.Fatal(err)
+        fmt.Println("cmd broke")
 	}
 	// do something with output
 	fmt.Println(c + " done")
