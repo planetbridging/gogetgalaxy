@@ -17,7 +17,13 @@ import (
 	//cmd
 	"log"
 	"os/exec"
-	"sync"
+    "sync"
+
+    //tcp client
+    "bufio"
+	"io"
+	"net"
+
 )
 
 type result struct {
@@ -31,57 +37,66 @@ var icmp_pe = "nmap -PE -sn -oG - "
 var icmp_pp = "nmap -PP -sn -oG - "
 var icmp_pm = "nmap -PM -sn -oG - "
 //port scan
-var ports_ss = "nmap -Pn -sS -oG - -p- -T4 --max-parallelism 100 --min-rate 10000 "
-var ports_st = "nmap -Pn -sT -oG - -p- -T4 --max-parallelism 100 --min-rate 10000 "
-var ports_sa = "nmap -Pn -sA -oG - -p- -T4 --max-parallelism 100 --min-rate 10000 "
-/*
-
-nmap --mtu 64 -p- -T4 -sS --max-parallelism 100 --min-rate 10000 192.168.1.1 	
-nmap -Pn -sS --mtu 64 -p - --max-parallelism 100 -vvv --min-rate 10000 pressback.space
-
-
-
-c := "nmap -sS -p 53,80,443,8081,8443 -sV -T4 -oX - 192.168.1.1"
-
-*/
-
+var ports_ss = "nmap -Pn -sS -oG - --min-rate 10000 --top-ports 1000 "
+var ports_st = "nmap -Pn -sT -oG - --min-rate 10000 --top-ports 1000 "
+var ports_sa = "nmap -Pn -sA -oG - --min-rate 10000 --top-ports 1000 "
 
 func main(){
-    scan_ip := "192.168.1.1"
-    /*found := ping(scan_ip)
+    /*scan_ip := "192.168.1.1"
+    found := ping(scan_ip)
     if found{
-       
+       port_scan(scan_ip)
     }*/
-    port_scan(scan_ip)
+    
    //fmt.Println(cmd(ports_sa+scan_ip))
+   tcp_client()
+}
+
+func tcp_client() {
+	con, err := net.Dial("tcp", "0.0.0.0:4849")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer con.Close()
+ 
+	clientReader := bufio.NewReader(os.Stdin)
+	serverReader := bufio.NewReader(con)
+ 
+	for {
+		// Waiting for the client request
+		clientRequest, err := clientReader.ReadString('\n')
+ 
+		switch err {
+		case nil:
+			clientRequest := strings.TrimSpace(clientRequest)
+			if _, err = con.Write([]byte(clientRequest + "\n")); err != nil {
+				log.Printf("failed to send the client request: %v\n", err)
+			}
+		case io.EOF:
+			log.Println("client closed the connection")
+			return
+		default:
+			log.Printf("client error: %v\n", err)
+			return
+		}
+ 
+		// Waiting for the server response
+		serverResponse, err := serverReader.ReadString('\n')
+ 
+		switch err {
+		case nil:
+			log.Println(strings.TrimSpace(serverResponse))
+		case io.EOF:
+			log.Println("server closed the connection")
+			return
+		default:
+			log.Printf("server error: %v\n", err)
+			return
+		}
+	}
 }
 
 
-func merge(channelList []chan string) <-chan string {
-    var wg sync.WaitGroup
-    out := make(chan string)
-
-    // Start an output goroutine for each input channel in cs.  output
-    // copies values from c to out until c is closed, then calls wg.Done.
-    output := func(c <-chan string) {
-        for n := range c {
-            out <- n
-        }
-        wg.Done()
-    }
-    wg.Add(len(channelList))
-    for _, c := range channelList {
-        go output(c)
-    }
-
-    // Start a goroutine to close out once all the output goroutines are
-    // done.  This must start after the wg.Add call.
-    go func() {
-        wg.Wait()
-        close(out)
-    }()
-    return out
-}
 
 
 //----------------------------------------cmd
