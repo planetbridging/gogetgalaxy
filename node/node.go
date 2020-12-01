@@ -108,7 +108,7 @@ func cpu_load_test(){
     
                 
                 if processedString != ""{
-                    fmt.Println("start"+processedString+"end")
+                    fmt.Println(processedString+" used with ",try_amount)
                     tmp_amount,_ := strconv.Atoi(processedString)
                     if tmp_amount >= max_cpu_limit{
                         break_loop = true
@@ -131,7 +131,7 @@ func cpu_load_test(){
         if break_loop{
             break
         }
-        fmt.Println("Cpu nmap limit: ",nmap_max_scans)
+        fmt.Println("nmap limit: ",nmap_max_scans)
     }
    
     fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
