@@ -52,6 +52,8 @@ var ports_sa = "nmap -Pn -sA -oG - --min-rate 10000 --top-ports 1000 "
 //windows get cpu usage
 var windwows_cpu = "wmic cpu get loadpercentage"
 
+//furious -w 65535 -s connect --ports 1-65535 declair.in
+
 func main(){
     /*scan_ip := "192.168.1.1"
     found := ping(scan_ip)
@@ -61,7 +63,44 @@ func main(){
     
    //fmt.Println(cmd(ports_sa+scan_ip))
    //tcp_client()
-   cpu_load_test()
+   
+   
+   
+   //cpu_load_test()
+    //multi_cmd_wait
+    /*var lst_tmp_cmds [] string
+   for n := 1; n < 5; n++{
+       //go cmd("furious -s -w 65535 connect --ports 1-65535 declair.in")
+       lst_tmp_cmds = append(lst_tmp_cmds,"furious -s connect -w 65535 --ports 1-65535 declair.in")
+   }
+
+   multi_tmp_results := multi_cmd_wait(lst_tmp_cmds)
+
+   for _,i := range multi_tmp_results{
+       fmt.Println(i)
+   }*/
+
+
+    tmp_cmd := cmd("furious -s connect -w 65535 --ports 1-65535 192.168.1.1")
+
+    get_furious_ports(tmp_cmd)
+   //time.Sleep(20 * time.Second)
+}
+
+func get_furious_ports(tmp string){
+    scanner := bufio.NewScanner(strings.NewReader(tmp))
+    for scanner.Scan() {
+        
+        if strings.Contains(scanner.Text(), "/tcp"){
+            s := strings.Split(scanner.Text(), "/tcp")
+            reg, err := regexp.Compile("[^0-9]+")
+            if err != nil {
+                log.Fatal(err)
+            }
+            tmp_port := reg.ReplaceAllString(s[0], "")
+            fmt.Println(tmp_port)
+        }
+    }
 }
 
 func cpu_load_test(){
