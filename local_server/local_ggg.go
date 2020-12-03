@@ -19,6 +19,13 @@ import (
 	"strings"
 )
 
+type obj_connection struct{
+	computer_type string
+	ip string
+	status string
+}
+
+var lst_obj_connections [] obj_connection
 
 func main(){
 	//--------------------------------------------load
@@ -45,21 +52,71 @@ func tcp_server() {
 			log.Println(err)
 			continue
 		}
- 
+		
+		strRemoteAddr := con.RemoteAddr().String()
+		remote_addr_clean := strings.Split(strRemoteAddr,":")[0]
+		found := false
+		for i := range lst_obj_connections{
+			if remote_addr_clean == lst_obj_connections[i].ip && lst_obj_connections[i].status == "connected"{
+				found = true
+				break
+			}
+			log.Println(lst_obj_connections[i].ip)
+		}
+
+		if found{
+			con.Close()
+			log.Println("duplicate connection: " + strRemoteAddr)
+		}else{
+			go handleClientRequest(con)
+		}
 		// If you want, you can increment a counter here and inject to handleClientRequest below as client identifier
-		go handleClientRequest(con)
+		
 	}
+}
+
+func update_connection_status(ip_cleaned string){
+    found_obj_connection := false
+    for i, _ := range lst_obj_connections {
+        if lst_obj_connections[i].ip == ip_cleaned{
+            found_obj_connection = true
+            lst_obj_connections[i].status = "connected"
+            break
+        }
+    }
+
+    if !found_obj_connection{
+        new_obj_connection := obj_connection{ip: ip_cleaned,status: "connected"}
+	    lst_obj_connections = append(lst_obj_connections,new_obj_connection)
+    }
+}
+
+func close_connection(ip_cleaned string){
+    for i, _ := range lst_obj_connections {
+        if lst_obj_connections[i].ip == ip_cleaned{
+            lst_obj_connections[i].status = "disconnected"
+            break
+        }
+    }
 }
  
 func handleClientRequest(con net.Conn) {
+
+	clientReader := bufio.NewReader(con)
+	
 	defer con.Close()
  
-	clientReader := bufio.NewReader(con)
- 
+	strRemoteAddr := con.RemoteAddr().String()
+	remote_addr_clean := strings.Split(strRemoteAddr,":")[0]
+	log.Println("connected: " + strRemoteAddr)
+
+	update_connection_status(remote_addr_clean)
+
 	for {
 		// Waiting for the client request
 		clientRequest, err := clientReader.ReadString('\n')
- 
+		
+		
 		switch err {
 		case nil:
 			clientRequest := strings.TrimSpace(clientRequest)
@@ -71,9 +128,11 @@ func handleClientRequest(con net.Conn) {
 			}
 		case io.EOF:
 			log.Println("client closed the connection by terminating the process")
+			close_connection(remote_addr_clean)
 			return
 		default:
 			log.Printf("error: %v\n", err)
+			close_connection(remote_addr_clean)
 			return
 		}
  

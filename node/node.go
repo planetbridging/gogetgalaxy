@@ -28,6 +28,12 @@ import (
     "net"
 )
 
+type obj_connection struct{
+	computer_type string
+    ip string
+    status string
+}
+
 type result struct {
     data string
     err string // you must use error type here
@@ -37,6 +43,9 @@ type Response struct {
     data   interface{}
     status bool
   }
+
+
+var lst_obj_connections [] obj_connection
 
 var os_type = ""
 
@@ -81,10 +90,28 @@ func main(){
    }*/
 
 
-    tmp_cmd := cmd("furious -s connect -w 65535 --ports 1-65535 192.168.1.1")
+    //tmp_cmd := cmd("furious -s connect -w 65535 --ports 1-65535 192.168.1.1")
 
-    get_furious_ports(tmp_cmd)
+    //get_furious_ports(tmp_cmd)
    //time.Sleep(20 * time.Second)
+   //fmt.Println("yay")
+   
+   for{
+        if len(lst_obj_connections) == 0{
+            find_local_server()
+        }else{
+            found_connection := false
+            for i, _ := range lst_obj_connections {
+                if lst_obj_connections[i].status == "connected"{
+                    found_connection = true
+                }
+            }
+            if !found_connection{
+                find_local_server()
+            }
+        }
+        time.Sleep(10 * time.Second)
+    }
 }
 
 func get_furious_ports(tmp string){
@@ -210,12 +237,80 @@ func test_time_out(test_amount int){
 }
 //----------------------------------------tcp connection
 
-func tcp_client() {
-	con, err := net.Dial("tcp", "0.0.0.0:4849")
-	if err != nil {
+func get_local_ip()string{
+    ifaces, _ := net.Interfaces()
+    // handle err
+    for _, i := range ifaces {
+        addrs, _ := i.Addrs()
+        // handle err
+        for _, addr := range addrs {
+            var ip net.IP
+            switch v := addr.(type) {
+            case *net.IPNet:
+                    ip = v.IP
+            case *net.IPAddr:
+                    ip = v.IP
+            }
+            // process IP address
+           
+            if ip.String() != "127.0.0.1" && strings.Contains(ip.String(),"."){
+                //log.Println(ip)
+                return ip.String()
+            }
+        }
+    }
+    return ""
+}
+func find_local_server(){
+    local_ip := get_local_ip()
+    ip_trimed := strings.Split(local_ip,".")
+    ip_joined := ip_trimed[0] + "." + ip_trimed[1] + "." + ip_trimed[2] + "."
+    for i := 1; i <= 255; i++ {
+        //log.Println(ip_joined + strconv.Itoa(i))
+        tmp_ip := ip_joined + strconv.Itoa(i)
+        //log.Println(tmp_ip)
+        go try_connection(tmp_ip)
+        
+    }
+}
+
+func try_connection(tmp_ip string){
+    con, err := net.Dial("tcp", tmp_ip+":4849")
+    if err != nil {
+        fmt.Println("Failed: " + tmp_ip)
+    }else{
+        fmt.Println("Found: " + tmp_ip)
+        tcp_client(con,tmp_ip)
+    }
+}
+
+func update_connection_status(ip_cleaned string){
+    found_obj_connection := false
+    for i, _ := range lst_obj_connections {
+        if lst_obj_connections[i].ip == ip_cleaned{
+            found_obj_connection = true
+            lst_obj_connections[i].status = "connected"
+            break
+        }
+    }
+
+    if !found_obj_connection{
+        new_obj_connection := obj_connection{ip: ip_cleaned,status: "connected"}
+	    lst_obj_connections = append(lst_obj_connections,new_obj_connection)
+    }
+}
+
+func tcp_client(con net.Conn,ip_cleaned string) {
+	//con, err := net.Dial("tcp", "192.168.1.201:4849")
+	/*if err != nil {
         fmt.Println(err)
         return
-	}
+    }*/
+
+    
+    update_connection_status(ip_cleaned)
+    
+
 	defer con.Close()
  
 	clientReader := bufio.NewReader(os.Stdin)
@@ -246,13 +341,24 @@ func tcp_client() {
 		case nil:
 			log.Println(strings.TrimSpace(serverResponse))
 		case io.EOF:
-			log.Println("server closed the connection")
+            log.Println("server closed the connection")
+            close_connection(ip_cleaned)
 			return
 		default:
-			log.Printf("server error: %v\n", err)
+            log.Printf("server error: %v\n", err)
+            close_connection(ip_cleaned)
 			return
 		}
 	}
+}
+
+func close_connection(ip_cleaned string){
+    for i, _ := range lst_obj_connections {
+        if lst_obj_connections[i].ip == ip_cleaned{
+            lst_obj_connections[i].status = "disconnected"
+            break
+        }
+    }
 }
 
 
