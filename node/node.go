@@ -6,7 +6,8 @@ import (
     "fmt"
     "os"
     "runtime"
-	"time"
+    "time"
+    //"math"
 
     
 	//test nmap max with cpu
@@ -48,6 +49,7 @@ type Response struct {
 var lst_obj_connections [] obj_connection
 
 var os_type = ""
+var found_server = "192.168.1.201"
 
 //static nmap cmds
 //ping
@@ -95,23 +97,11 @@ func main(){
     //get_furious_ports(tmp_cmd)
    //time.Sleep(20 * time.Second)
    //fmt.Println("yay")
-   
-   for{
-        if len(lst_obj_connections) == 0{
-            find_local_server()
-        }else{
-            found_connection := false
-            for i, _ := range lst_obj_connections {
-                if lst_obj_connections[i].status == "connected"{
-                    found_connection = true
-                }
-            }
-            if !found_connection{
-                find_local_server()
-            }
-        }
-        time.Sleep(10 * time.Second)
-    }
+   //log.Println(get_cpu())
+   //search_for_servers()
+   time.Sleep(5 * time.Second)
+   fmt.Println("Starting cpu nmap load test")
+   cpu_load_test()
 }
 
 func get_furious_ports(tmp string){
@@ -137,53 +127,73 @@ func cpu_load_test(){
         cpu_load = "get_cpu_usage.bat"
     }else if runtime.GOOS == "linux"{
         os_type = "linux"
+        fmt.Println(os_type)
     }
+
+    
 
     max_cpu_limit := 70
     tested_cpu_limit := 0
     nmap_max_scans := 0
     break_loop := false
 
-    for n := 1; n < 10; n++{
+    for n := 1; n < 20; n++{
         try_amount := n * 20
         
-        
+        tmp_scan_ip := found_server
+
+        if tmp_scan_ip == ""{
+            tmp_scan_ip = "127.0.0.1"
+        }
         //go test_time_out(try_amount)
         for n := 1; n <= try_amount; n++{
-            go cmd("nmap -sT -p- 127.0.0.1")
+            go cmd("nmap -sT -p- " + tmp_scan_ip)
         }
         
     
         for i := 0; i < 5; i++{
             time.Sleep(2 * time.Second)
-            cpu_finished := cmd(cpu_load)
-            fmt.Println(cpu_finished)
-            //clean := strings.Replace(cpu_finished, "LoadPercentage", "", -1)
-            //cpu_amount, _ := strconv.Atoi(clean)
-            
-            //fmt.Println(cpu_amount)
-            fmt.Println("yay"+cpu_finished + "wtf")
-            scanner := bufio.NewScanner(strings.NewReader(cpu_finished))
-            for scanner.Scan() {
-    
-                reg, err := regexp.Compile("[^0-9]+")
-                if err != nil {
-                    log.Fatal(err)
-                }
-                processedString := reg.ReplaceAllString(scanner.Text(), "")
-    
+
+            tmp_amount := 0
+
+            if os_type == "windows"{
+                cpu_finished := cmd(cpu_load)
+
+                //fmt.Println(cpu_finished)
+                //clean := strings.Replace(cpu_finished, "LoadPercentage", "", -1)
+                //cpu_amount, _ := strconv.Atoi(clean)
                 
-                if processedString != ""{
-                    fmt.Println(processedString+" used with ",try_amount)
-                    tmp_amount,_ := strconv.Atoi(processedString)
-                    if tmp_amount >= max_cpu_limit{
-                        break_loop = true
-                    }else if tmp_amount > tested_cpu_limit{
-                        tested_cpu_limit = tmp_amount
-                        nmap_max_scans = try_amount
+                //fmt.Println(cpu_amount)
+                //fmt.Println("yay"+cpu_finished + "wtf")
+                scanner := bufio.NewScanner(strings.NewReader(cpu_finished))
+                for scanner.Scan() {
+        
+                    reg, err := regexp.Compile("[^0-9]+")
+                    if err != nil {
+                        log.Fatal(err)
+                    }
+                    processedString := reg.ReplaceAllString(scanner.Text(), "")
+        
+                    
+                    if processedString != ""{
+                        fmt.Println(processedString+" used with ",try_amount)
+                        tmp_amount,_ = strconv.Atoi(processedString)
+                        break
                     }
                 }
+            }else if os_type =="linux"{
+                tmp_amount = get_cpu()
             }
+            
+
+            
+            if tmp_amount >= max_cpu_limit{
+                break_loop = true
+            }else if tmp_amount > tested_cpu_limit{
+                tested_cpu_limit = tmp_amount
+                nmap_max_scans = try_amount
+            }
+            
         } 
     
         time.Sleep(5 * time.Second)
@@ -193,11 +203,17 @@ func cpu_load_test(){
             //cmd("taskkill /im nmap.exe /t /f")
             go cmd("kill_all_nmap.bat")
             time.Sleep(5 * time.Second)
+        }else if os_type == "linux"{
+            fmt.Println("killing all nmap tasks")
+            //keep crashing
+            //cmd("taskkill /im nmap.exe /t /f")
+            go cmd("killall nmap")
+            time.Sleep(5 * time.Second)
         }
         if break_loop{
             break
         }
-        fmt.Println("nmap limit: ",nmap_max_scans)
+        fmt.Println("nmap load test limit: ",nmap_max_scans)
     }
    
     fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
@@ -236,6 +252,26 @@ func test_time_out(test_amount int){
     }
 }
 //----------------------------------------tcp connection
+
+func search_for_servers(){
+    for{
+        if len(lst_obj_connections) == 0{
+            find_local_server()
+        }else{
+            found_connection := false
+            for i, _ := range lst_obj_connections {
+                if lst_obj_connections[i].status == "connected"{
+                    found_connection = true
+                    found_server = lst_obj_connections[i].ip
+                }
+            }
+            if !found_connection{
+                find_local_server()
+            }
+        }
+        time.Sleep(10 * time.Second)
+    }
+}
 
 func get_local_ip()string{
     ifaces, _ := net.Interfaces()
@@ -277,7 +313,7 @@ func find_local_server(){
 func try_connection(tmp_ip string){
     con, err := net.Dial("tcp", tmp_ip+":4849")
     if err != nil {
-        fmt.Println("Failed: " + tmp_ip)
+        //fmt.Println("Failed: " + tmp_ip)
     }else{
         fmt.Println("Found: " + tmp_ip)
         tcp_client(con,tmp_ip)
@@ -440,7 +476,7 @@ func multi_cmd_wait(lstcmds []string)[]string{
 
 func cmd_wait(c string,wg *sync.WaitGroup, results chan result){
 	defer wg.Done()
-	fmt.Println(c + " starting")
+	//fmt.Println(c + " starting")
 	command := strings.Split(c, " ")
 	if len(command) < 2 {
 		// TODO: handle error
@@ -454,7 +490,7 @@ func cmd_wait(c string,wg *sync.WaitGroup, results chan result){
         return
 	}
 	// do something with output
-	fmt.Println(c + " done")
+	//fmt.Println(c + " done")
     results <- result{data:  string(stdoutStderr)}
 }
 
@@ -470,15 +506,15 @@ func cmd(c string) string{
 	if err != nil {
 		// TODO: handle error more gracefully
         //log.Fatal(err)
-        fmt.Println("cmd broke")
+        //fmt.Println("cmd broke")
 	}
 	// do something with output
-	fmt.Println(c + " done")
+	//fmt.Println(c + " done")
 	return string(stdoutStderr)
 }
 
 
-func get_cpu() {
+func get_cpu() int{
     idle0, total0 := get_CPU_Sample()
     time.Sleep(3 * time.Second)
     idle1, total1 := get_CPU_Sample()
@@ -488,6 +524,7 @@ func get_cpu() {
     cpuUsage := 100 * (totalTicks - idleTicks) / totalTicks
 
     fmt.Printf("CPU usage is %f%% [busy: %f, total: %f]\n", cpuUsage, totalTicks-idleTicks, totalTicks)
+    return int(cpuUsage)
 }
 
 //----------------------------------------check cpu
