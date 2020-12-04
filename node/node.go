@@ -8,7 +8,7 @@ import (
     "runtime"
     "time"
     //"math"
-
+    //"os/user"
     
 	//test nmap max with cpu
 	"io/ioutil"
@@ -62,6 +62,7 @@ var ports_st = "nmap -Pn -sT -oG - --min-rate 10000 --top-ports 1000 "
 var ports_sa = "nmap -Pn -sA -oG - --min-rate 10000 --top-ports 1000 "
 //windows get cpu usage
 var windwows_cpu = "wmic cpu get loadpercentage"
+var max_nmap_scans = 0
 
 //furious -w 65535 -s connect --ports 1-65535 declair.in
 
@@ -99,9 +100,103 @@ func main(){
    //fmt.Println("yay")
    //log.Println(get_cpu())
    //search_for_servers()
-   time.Sleep(5 * time.Second)
-   fmt.Println("Starting cpu nmap load test")
-   cpu_load_test()
+   //time.Sleep(5 * time.Second)
+   
+   //fmt.Println("Starting cpu nmap load test")
+   //
+   setup_ggg_profile()
+}
+
+func setup_ggg_profile(){
+    ggg_profile_location := get_home_dir() + "/ggg/"
+
+
+    if _, err := os.Stat(ggg_profile_location + "ggg_settings.txt"); os.IsNotExist(err) {
+        cpu_load_test()
+    }
+
+    if _, err := os.Stat(ggg_profile_location); !os.IsNotExist(err) {
+        read_ggg_profile(ggg_profile_location + "ggg_settings.txt")
+    }else{
+        err := os.Mkdir(ggg_profile_location, 0755)
+        if err != nil {
+            //log.Fatal(err)
+            fmt.Println("failed to create profile folder")
+        }else{
+            create_new_profile(ggg_profile_location)
+        }
+    }
+
+    if _, err := os.Stat(ggg_profile_location + "ggg_settings.txt"); !os.IsNotExist(err) {
+    }else{
+        create_new_profile(ggg_profile_location)
+    }
+}
+
+func create_new_profile(home_path string){
+    f, err := os.Create(home_path + "ggg_settings.txt")
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    defer f.Close()
+    tmp_nmap_max := strconv.Itoa(max_nmap_scans)
+    words := []string{"max_nmap: " + tmp_nmap_max}
+
+    for _, word := range words {
+
+        _, err := f.WriteString(word + "\n")
+
+        if err != nil {
+            log.Fatal(err)
+            fmt.Println("failed to create ggg local profile")
+        }
+    }
+
+    fmt.Println("ggg profile created at: " + home_path)
+}
+
+func read_ggg_profile(home_ggg string){
+    file, err := os.Open(home_ggg)
+    if err != nil {
+        //log.Fatal(err)
+        fmt.Println("failed to import ggg profile")
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        if strings.Contains(scanner.Text(),"max_nmap:"){
+            tmp_nmap_max := strings.Split(scanner.Text(),"max_nmap:")[1]
+            i, _ := strconv.Atoi(tmp_nmap_max)
+            max_nmap_scans = i
+            fmt.Println("max nmap scans: " + tmp_nmap_max)
+        }
+    }
+
+    if err := scanner.Err(); err != nil {
+        //log.Fatal(err)
+        fmt.Println("failed to import ggg profile")
+    }
+}
+
+
+
+func get_home_dir() string {
+    if runtime.GOOS == "windows" {
+        home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")  + "\\"
+        if home == "" {
+            home = os.Getenv("USERPROFILE")
+        }
+        return home
+    } else if runtime.GOOS == "linux" {
+        home := "/home/" + os.Getenv("SUDO_USER") + "/"
+        if home != "" {
+            return home
+        }
+    }
+    return os.Getenv("HOME")
 }
 
 func get_furious_ports(tmp string){
@@ -217,6 +312,7 @@ func cpu_load_test(){
     }
    
     fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
+    max_nmap_scans = nmap_max_scans
 }
 //----------------------------------------cpu usage testing
 func test_time_out(test_amount int){
