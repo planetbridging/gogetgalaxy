@@ -241,7 +241,7 @@ func cpu_load_test(){
             tmp_scan_ip = "127.0.0.1"
         }
         //go test_time_out(try_amount)
-        for n := 1; n <= try_amount; n++{
+        for c := 1; c <= try_amount; c++{
             go cmd("nmap -sT -p- " + tmp_scan_ip)
         }
         
@@ -282,13 +282,13 @@ func cpu_load_test(){
             
 
             
-            if tmp_amount >= max_cpu_limit{
+            if tmp_amount >= max_cpu_limit || tested_cpu_limit >= max_cpu_limit{
                 break_loop = true
+                break
             }else if tmp_amount > tested_cpu_limit{
                 tested_cpu_limit = tmp_amount
                 nmap_max_scans = try_amount
             }
-            
         } 
     
         time.Sleep(5 * time.Second)
@@ -308,7 +308,7 @@ func cpu_load_test(){
         if break_loop{
             break
         }
-        fmt.Println("nmap load test limit: ",nmap_max_scans)
+        fmt.Println("nmap load test limit: ",try_amount)
     }
    
     fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
