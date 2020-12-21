@@ -190,7 +190,7 @@ func get_home_dir() string {
             home = os.Getenv("USERPROFILE")
         }
         return home
-    } else if runtime.GOOS == "linux" {
+    } else if runtime.GOOS == "linux" || runtime.GOOS == "android"{
         home := "/home/" + os.Getenv("SUDO_USER") + "/"
         if home != "" {
             return home
