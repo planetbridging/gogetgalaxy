@@ -3,7 +3,7 @@ package main
 import (
 	//test routes max
     "flag"
-    "fmt"
+    //"fmt"
     "os"
     "runtime"
     "time"
@@ -49,7 +49,7 @@ type Response struct {
 var lst_obj_connections [] obj_connection
 
 var os_type = ""
-var found_server = "192.168.1.201"
+var found_server = "192.168.1.2"
 
 //static nmap cmds
 //ping
@@ -73,7 +73,7 @@ func main(){
        port_scan(scan_ip)
     }*/
     
-   //fmt.Println(cmd(ports_sa+scan_ip))
+   //log.Println(cmd(ports_sa+scan_ip))
    //tcp_client()
    
    
@@ -89,7 +89,7 @@ func main(){
    multi_tmp_results := multi_cmd_wait(lst_tmp_cmds)
 
    for _,i := range multi_tmp_results{
-       fmt.Println(i)
+       log.Println(i)
    }*/
 
 
@@ -97,12 +97,12 @@ func main(){
 
     //get_furious_ports(tmp_cmd)
    //time.Sleep(20 * time.Second)
-   //fmt.Println("yay")
+   //log.Println("yay")
    //log.Println(get_cpu())
    //search_for_servers()
    //time.Sleep(5 * time.Second)
    
-   //fmt.Println("Starting cpu nmap load test")
+   //log.Println("Starting cpu nmap load test")
    //
    setup_ggg_profile()
 }
@@ -121,7 +121,7 @@ func setup_ggg_profile(){
         err := os.Mkdir(ggg_profile_location, 0755)
         if err != nil {
             //log.Fatal(err)
-            fmt.Println("failed to create profile folder")
+            log.Println("failed to create profile folder")
         }else{
             create_new_profile(ggg_profile_location)
         }
@@ -150,18 +150,18 @@ func create_new_profile(home_path string){
 
         if err != nil {
             log.Fatal(err)
-            fmt.Println("failed to create ggg local profile")
+            log.Println("failed to create ggg local profile")
         }
     }
 
-    fmt.Println("ggg profile created at: " + home_path)
+    log.Println("ggg profile created at: " + home_path)
 }
 
 func read_ggg_profile(home_ggg string){
     file, err := os.Open(home_ggg)
     if err != nil {
         //log.Fatal(err)
-        fmt.Println("failed to import ggg profile")
+        log.Println("failed to import ggg profile")
     }
     defer file.Close()
 
@@ -171,13 +171,13 @@ func read_ggg_profile(home_ggg string){
             tmp_nmap_max := strings.Split(scanner.Text(),"max_nmap:")[1]
             i, _ := strconv.Atoi(tmp_nmap_max)
             max_nmap_scans = i
-            fmt.Println("max nmap scans: " + tmp_nmap_max)
+            log.Println("max nmap scans: " + tmp_nmap_max)
         }
     }
 
     if err := scanner.Err(); err != nil {
         //log.Fatal(err)
-        fmt.Println("failed to import ggg profile")
+        log.Println("failed to import ggg profile")
     }
 }
 
@@ -210,7 +210,7 @@ func get_furious_ports(tmp string){
                 log.Fatal(err)
             }
             tmp_port := reg.ReplaceAllString(s[0], "")
-            fmt.Println(tmp_port)
+            log.Println(tmp_port)
         }
     }
 }
@@ -222,7 +222,7 @@ func cpu_load_test(){
         cpu_load = "get_cpu_usage.bat"
     }else if runtime.GOOS == "linux"{
         os_type = "linux"
-        fmt.Println(os_type)
+        log.Println(os_type)
     }
 
     
@@ -254,12 +254,12 @@ func cpu_load_test(){
             if os_type == "windows"{
                 cpu_finished := cmd(cpu_load)
 
-                //fmt.Println(cpu_finished)
+                //log.Println(cpu_finished)
                 //clean := strings.Replace(cpu_finished, "LoadPercentage", "", -1)
                 //cpu_amount, _ := strconv.Atoi(clean)
                 
-                //fmt.Println(cpu_amount)
-                //fmt.Println("yay"+cpu_finished + "wtf")
+                //log.Println(cpu_amount)
+                //log.Println("yay"+cpu_finished + "wtf")
                 scanner := bufio.NewScanner(strings.NewReader(cpu_finished))
                 for scanner.Scan() {
         
@@ -271,7 +271,7 @@ func cpu_load_test(){
         
                     
                     if processedString != ""{
-                        fmt.Println(processedString+" used with ",try_amount)
+                        log.Println(processedString+" used with ",try_amount)
                         tmp_amount,_ = strconv.Atoi(processedString)
                         break
                     }
@@ -293,13 +293,13 @@ func cpu_load_test(){
     
         time.Sleep(5 * time.Second)
         if os_type == "windows"{
-            fmt.Println("killing all nmap tasks")
+            log.Println("killing all nmap tasks")
             //keep crashing
             //cmd("taskkill /im nmap.exe /t /f")
             go cmd("kill_all_nmap.bat")
             time.Sleep(5 * time.Second)
         }else if os_type == "linux"{
-            fmt.Println("killing all nmap tasks")
+            log.Println("killing all nmap tasks")
             //keep crashing
             //cmd("taskkill /im nmap.exe /t /f")
             go cmd("killall nmap")
@@ -308,10 +308,10 @@ func cpu_load_test(){
         if break_loop{
             break
         }
-        fmt.Println("nmap load test limit: ",try_amount)
+        log.Println("nmap load test limit: ",try_amount)
     }
    
-    fmt.Println("Cpu nmap limit completed: ",nmap_max_scans)
+    log.Println("Cpu nmap limit completed: ",nmap_max_scans)
     max_nmap_scans = nmap_max_scans
 }
 //----------------------------------------cpu usage testing
@@ -335,16 +335,16 @@ func test_time_out(test_amount int){
         default:
             ch <- Response{data: "data", status: true}
         case <-ctx.Done():
-            fmt.Println("Canceled by timeout")
+            log.Println("Canceled by timeout")
             return
         }
     }()
 
     select {
     case <-ch:
-        fmt.Println("Read from ch")
+        log.Println("Read from ch")
     case <-time.After(20 * time.Second):
-        fmt.Println("Timed out")
+        log.Println("Timed out")
     }
 }
 //----------------------------------------tcp connection
@@ -409,9 +409,9 @@ func find_local_server(){
 func try_connection(tmp_ip string){
     con, err := net.Dial("tcp", tmp_ip+":4849")
     if err != nil {
-        //fmt.Println("Failed: " + tmp_ip)
+        //log.Println("Failed: " + tmp_ip)
     }else{
-        fmt.Println("Found: " + tmp_ip)
+        log.Println("Found: " + tmp_ip)
         tcp_client(con,tmp_ip)
     }
 }
@@ -435,7 +435,7 @@ func update_connection_status(ip_cleaned string){
 func tcp_client(con net.Conn,ip_cleaned string) {
 	//con, err := net.Dial("tcp", "192.168.1.201:4849")
 	/*if err != nil {
-        fmt.Println(err)
+        log.Println(err)
         return
     }*/
 
@@ -506,14 +506,14 @@ func ping(ip string)bool{
 	
 
 	lst_tmp_ping:= []string{pe,pp,pm}
-	fmt.Println(lst_tmp_ping)
+	log.Println(lst_tmp_ping)
 
     results := multi_cmd_wait(lst_tmp_ping)
 	for _, r := range results{
         if strings.Contains(r,"Status: Up"){
             return true
         }
-        //fmt.Println(r)
+        //log.Println(r)
     }
     return false
 }
@@ -525,11 +525,11 @@ func port_scan(ip string){
     
 
 	lst_tmp_port:= []string{ss,st,sa}
-	//fmt.Println(lst_tmp_port)
+	//log.Println(lst_tmp_port)
 
     results := multi_cmd_wait(lst_tmp_port)
 	for _, r := range results{
-        fmt.Println(r)
+        log.Println(r)
     }
 }
 
@@ -541,7 +541,7 @@ func multi_cmd_wait(lstcmds []string)[]string{
     ch := make(chan result)
 	
 	
-    //fmt.Println(<-nums) // Read the value from unbuffered channel
+    //log.Println(<-nums) // Read the value from unbuffered channel
     
     for _, c := range lstcmds {
         //channel := make(chan string)
@@ -572,7 +572,7 @@ func multi_cmd_wait(lstcmds []string)[]string{
 
 func cmd_wait(c string,wg *sync.WaitGroup, results chan result){
 	defer wg.Done()
-	//fmt.Println(c + " starting")
+	//log.Println(c + " starting")
 	command := strings.Split(c, " ")
 	if len(command) < 2 {
 		// TODO: handle error
@@ -586,7 +586,7 @@ func cmd_wait(c string,wg *sync.WaitGroup, results chan result){
         return
 	}
 	// do something with output
-	//fmt.Println(c + " done")
+	//log.Println(c + " done")
     results <- result{data:  string(stdoutStderr)}
 }
 
@@ -602,10 +602,10 @@ func cmd(c string) string{
 	if err != nil {
 		// TODO: handle error more gracefully
         //log.Fatal(err)
-        //fmt.Println("cmd broke")
+        //log.Println("cmd broke")
 	}
 	// do something with output
-	//fmt.Println(c + " done")
+	//log.Println(c + " done")
 	return string(stdoutStderr)
 }
 
@@ -619,7 +619,7 @@ func get_cpu() int{
     totalTicks := float64(total1 - total0)
     cpuUsage := 100 * (totalTicks - idleTicks) / totalTicks
 
-    fmt.Printf("CPU usage is %f%% [busy: %f, total: %f]\n", cpuUsage, totalTicks-idleTicks, totalTicks)
+    log.Printf("CPU usage is %f%% [busy: %f, total: %f]\n", cpuUsage, totalTicks-idleTicks, totalTicks)
     return int(cpuUsage)
 }
 
@@ -638,7 +638,7 @@ func get_CPU_Sample() (idle, total uint64) {
             for i := 1; i < numFields; i++ {
                 val, err := strconv.ParseUint(fields[i], 10, 64)
                 if err != nil {
-                    fmt.Println("Error: ", i, fields[i], err)
+                    log.Println("Error: ", i, fields[i], err)
                 }
                 total += val // tally up all the numbers to get total ticks
                 if i == 4 {  // idle is the 5th field in the cpu line
@@ -665,7 +665,7 @@ func f() {
 func test_routes_main() {
     flag.Parse()
     if *n <= 0 {
-            fmt.Fprintf(os.Stderr, "invalid number of goroutines")
+            log.Println(os.Stderr, "invalid number of goroutines")
             os.Exit(1)
     }
 
@@ -689,12 +689,12 @@ func test_routes_main() {
     runtime.ReadMemStats(&m1)
 
     if counter != *n {
-            fmt.Fprintf(os.Stderr, "failed to begin execution of all goroutines")
+            log.Println(os.Stderr, "failed to begin execution of all goroutines")
             os.Exit(1)
     }
 
-    fmt.Printf("Number of goroutines: %d\n", *n)
-    fmt.Printf("Per goroutine:\n")
-    fmt.Printf("  Memory: %.2f bytes\n", float64(m1.Sys-m0.Sys)/float64(*n))
-    fmt.Printf("  Time:   %f µs\n", float64(t1-t0)/float64(*n)/1e3)
+    log.Printf("Number of goroutines: %d\n", *n)
+    log.Printf("Per goroutine:\n")
+    log.Printf("  Memory: %.2f bytes\n", float64(m1.Sys-m0.Sys)/float64(*n))
+    log.Printf("  Time:   %f µs\n", float64(t1-t0)/float64(*n)/1e3)
 }
