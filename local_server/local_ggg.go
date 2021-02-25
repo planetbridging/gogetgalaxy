@@ -5,7 +5,7 @@ import (
     "log"
 	//"os/exec"
 	//"strings"
-	//"fmt"
+	"fmt"
 	//"net"
 	//"encoding/xml"
 	//"encoding/xml"
@@ -17,7 +17,18 @@ import (
 	"io"
 	"net"
 	"strings"
+	//"reflect"
+    "github.com/gorilla/websocket"
 )
+
+//sockets
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
+
+//sockets
 
 type obj_connection struct{
 	computer_type string
@@ -30,10 +41,61 @@ var lst_obj_connections [] obj_connection
 func main(){
 	//--------------------------------------------load
 	//load_country("Australia")
-	go tcp_server()
+	//go tcp_server()
+	//aussie count = 63,232,000
 	//--------------------------------------------load
 
+	bewear_setup()
+	//go setup_websockets()
+
 	http.HandleFunc("/", handler)
+
+	http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+        conn, _ := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
+        for {
+            // Read message from browser
+            msgType, msg, err := conn.ReadMessage()
+            if err != nil {
+                return
+            }
+
+			fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg));
+
+			cmd := string(msg);
+
+			if(strings.HasPrefix(cmd,"refresh")){
+				//
+
+				if(findAll_status == "update"){
+					
+					for _, n := range network {
+						fmt.Println(n.ip);
+						/*if err = conn.WriteMessage(msgType, "pc: " + n.ip + ","); err != nil {
+
+						}*/
+						//xType := reflect.TypeOf(msg);
+						//fmt.Println(xType);
+						newmsg := []byte("pc: " + n.ip + ",")
+						if err = conn.WriteMessage(msgType, newmsg); err != nil {
+							
+						}
+					}
+
+					findAll_status = "ready";
+				}
+			}
+
+            // Print the message to the console
+            
+			
+
+            // Write message back to browser
+            if err = conn.WriteMessage(msgType, msg); err != nil {
+                return
+            }
+        }
+    })
+	fmt.Println("Web sockets started");
 	http.Handle("/web/", http.FileServer(http.Dir(*root)))
 	log.Println("Serving at localhost:4848...")
 	log.Fatal(http.ListenAndServe(":4848", nil))

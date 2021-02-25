@@ -1,2 +1,2 @@
-go run .
+cmd.exe
 pause

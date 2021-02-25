@@ -86,9 +86,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		cards += "</div>"
 		fmt.Fprint(w,cards)
 	}else if r.URL.Path == "/ready"{
-		//fmt.Fprint(w,get_available())
-	}
+		fmt.Fprint(w,get_available())
+	}else if r.URL.Path == "/status"{
 
+	}else if r.URL.Path == "/findall"{
+		if findAll_status == "ready"{
+			fmt.Fprint(w,"Starting scan")
+			go findAll()
+		}else{
+			fmt.Fprint(w,"busy")
+		}
+	}
 }
 
 func country_card(country string, count int) string{

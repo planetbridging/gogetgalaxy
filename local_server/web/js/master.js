@@ -2,8 +2,25 @@ $( document ).ready(function() {
 
 	console.log("Welcome to ggg");
   //LoadFile("/web/menu.html");
-  refresh_countries()
+  //refresh_countries()
+
+  $( "button" ).click(function() {
+    BtnPress($(this).attr('id'));
+  });
+
+  $("#LST_PC").html("");
+
 });
+
+
+function BtnPress(id){
+  console.log("BTN: " + id);
+
+  if(id == "BtnFindAll"){
+    LoadFile("/findall");
+  }
+
+}
 
 
 function LoadFile(file){

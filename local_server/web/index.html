@@ -3,14 +3,18 @@
 <head>
 <meta charset="UTF-8">
         <title>gogetgalaxy</title>
-		<link rel="stylesheet" href="/web/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <script src="/web/js/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-		<script src="/web/js/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-		<script src="/web/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!--<link rel="stylesheet" href="/web/css/bootstrap.min.css">-->
+
+    <link href="/web/css/bootstrap.min.css" rel="stylesheet"  >
+        <script src="/web/js/jquery-3.4.1.slim.min.js"></script>
+<!--		<script src="/web/js/popper.min.js" ></script>-->
+		<script src="/web/js/bootstrap.min.js" ></script>
+
 		<link href="/web/css/master.css" rel="stylesheet">
 		<script src="/web/js/jquery.min.js"></script>
 		<script src="/web/js/master.js"></script>
+    
 </head>
 <body>
 
@@ -46,13 +50,132 @@
     </div>
   </nav>
 
-<div id="Window">
+  
+
+<div id="accordion" class="w-100 h-75 p-3">
+  <div class="card bg-dark text-white">
+    <div class="card-header" id="headingOne">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          <h2>Computers</h2>
+        </button>
+
+        <button id="BtnFindAll" type="button" class="btn btn-secondary">Find</button>
+        <button type="button" class="btn btn-secondary">Manual</button>
+      </h5>
+    </div>
+
+    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+      <div class="card-body">
+        <!--machines-->
+
+        <div class="container" style="margin-top:3em;">
+          <div  id="LST_PC" class="row">
+
+
+             <!--example-->
+          <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+            <div class="card-header">192.168.1.1</div>
+            <div class="card-body">
+              <h5 class="card-title"></h5>
+              <p class="card-text"></p>
+            </div>
+            <div class="card-footer text-white">
+              <button type="button" class="btn btn-dark">SSH</button>
+              <button type="button" class="btn btn-dark"  data-toggle="modal" data-target="#cliModalFullscreen">CLI</button>
+            </div>
+          </div>
+          <!--example-->
+
+            </div>
+        </div>
+        <!--machines-->
+      </div>
+    </div>
+  </div>
+  <div class="card bg-dark text-white">
+    <div class="card-header" id="headingTwo">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed text-center" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          <h2>CLI</h2>
+        </button>
+      </h5>
+    </div>
+    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+      <div class="card-body">
+        <!--cmds-->
+        <div class="w-100 h-100 p-3">
+          <div class="row">
+            <div class="col-4">
+              <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Home</a>
+                <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#list-profile" role="tab" aria-controls="profile">Profile</a>
+                <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#list-messages" role="tab" aria-controls="messages">Messages</a>
+                <a class="list-group-item list-group-item-action" id="list-settings-list" data-toggle="list" href="#list-settings" role="tab" aria-controls="settings">Settings</a>
+              </div>
+            </div>
+            <div class="col-8">
+              <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">...</div>
+                <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">...</div>
+                <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">...</div>
+                <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!---->
+      </div>
+    </div>
+  </div>
+  <div class="card bg-dark text-white">
+    <div class="card-header" id="headingThree">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          Collapsible Group Item #3
+        </button>
+      </h5>
+    </div>
+    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+      <div class="card-body">
+        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="list-group text-light p-3">
-    <p class="h4">Countries</p>
-    <div id="LstCountires"></div>
- </div>
+
+
+<!--fullscreen cli -->
+
+<div class="modal fade" id="cliModalFullscreen" tabindex="-1" aria-labelledby="cliModalFullscreenLabel" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title h4" id="cliModalFullscreenLabel">Full screen modal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body  ">
+        <p>What follows is just some placeholder text for this modal dialog. I feel like I'm already there. I’m gon’ put her in a coma. Boom, boom, boom. You're reading me like erotica, boy, you make me feel exotic, yeah. Happy birthday. From Tokyo to Mexico, to Rio. I knew you were.</p>
+        <p>Last Friday night. Calling out my name. Kiss her, touch her, squeeze her buns. Heavy is the head that wears the crown. So open up your heart and just let it begin. Boy all this time was worth the waiting. You know that I'm the girl that you should call. End of the rainbow looking treasure. You're reading me like erotica, boy, you make me feel exotic, yeah. Do you know that there's still a chance for you 'Cause there's a spark in you? So I sat quietly, agreed politely. From Tokyo to Mexico, to Rio.</p>
+        <p>Don't be a shy kinda guy I'll bet it's beautiful. You fall asleep during foreplay, 'Cause the pills you take, are more your forte. Open up your heart. You're never gonna be unsatisfied. Know that you are worthy. This one goes out to the ladies at breakfast in last night's dress. You think you've seen her in a magazine. I should've told you what you meant to me 'Cause now I pay the price. Takes you miles high, so high, 'cause she’s got that one international smile.</p>
+        <p>Yo, shout out to all you kids, buying bottle service, with your rent money. So I sat quietly, agreed politely. They say, be afraid you're not like the others, futuristic lover. Boom, boom, boom. Don't need apologies. We can dance, until we die, you and I, will be young forever. If you choose to walk away, don’t walk away. You know that I'm the girl that you should call. This Friday night, do it all again.</p>
+        <p>I'm walking on air. But lil' mama so dope. It's time to bring out the big balloons. Are you ready for, ready for. The boys break their necks try'na to creep a little sneak peek. Summer after high school when we first met. If you want it all. (This is how we do) You open my eyes and I'm ready to go, lead me into the light.</p>
+        <p>Growing fast into a bolt of lightning. We freak in my jeep, Snoop Doggy Dogg on the stereo. Baby do you dare to do this? Open up your heart and just let it begin. Peach-pink lips, yeah, everybody stares. Be your teenage dream tonight. Are you brave enough to let me see your peacock? You think I'm funny when I tell the punchline wrong. Woo! I knew you were. All this money can't buy me a time machine. I can't sleep let's run away and don't ever look back, don't ever look back.</p>
+        <p>Make it like your birthday everyday. I'm not sticking around to watch you go down. Uh-huh, I see you. For you I'll risk it all, all. I’m gon’ put her in a coma. She ride me like a roller coaster. You hear my voice, you hear that sound. 'Cause I will love you unconditionally (oh yeah). They say, be afraid you're not like the others, futuristic lover. There is no fear now, let go and just be free, I will love you unconditionally.</p>
+        <p>We can dance, until we die, you and I, will be young forever. Pop your Pérignon. Last Friday night, yeah I think we broke the law, always say we're gonna stop. Don't need apologies. Give you something good to celebrate. But don’t make me your enemy, your enemy, your enemy. Flowers in her hair, she don't care. Tone, tan fit and ready, turn it up cause its gettin' heavy.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input id="input" type="text" />
+<button onclick="send()">Send</button>
+<pre id="output"></pre>
+<script src="/web/js/sockets.js"></script>
 
 <!-- 
 source,target,value
@@ -65,5 +188,5 @@ source,target,value
   Sarah,Alice,4
   -->
 
-  <footer _ngcontent-vnc-c38="" class="py-4 bg-light mt-auto fixed-bottom bg-dark"><div _ngcontent-vnc-c38="" class="container-fluid"><div _ngcontent-vnc-c38="" class="d-flex align-items-center justify-content-between small"><div _ngcontent-vnc-c38="" class="text-muted">Copyright © Shannon Setter</div><div _ngcontent-vnc-c38="" class="text-muted">planetbridging@gmail.com</div><div _ngcontent-vnc-c38=""><a _ngcontent-vnc-c38="" href="#">Privacy Policy</a> · <a _ngcontent-vnc-c38="" href="#">Terms &amp; Conditions</a></div></div></div></footer>
+  <!--<footer _ngcontent-vnc-c38="" class="py-4 bg-light mt-auto fixed-bottom bg-dark"><div _ngcontent-vnc-c38="" class="container-fluid"><div _ngcontent-vnc-c38="" class="d-flex align-items-center justify-content-between small"><div _ngcontent-vnc-c38="" class="text-muted">Copyright © Shannon Setter</div><div _ngcontent-vnc-c38="" class="text-muted">planetbridging@gmail.com</div><div _ngcontent-vnc-c38=""><a _ngcontent-vnc-c38="" href="#">Privacy Policy</a> · <a _ngcontent-vnc-c38="" href="#">Terms &amp; Conditions</a></div></div></div></footer>-->
 </body></html>
