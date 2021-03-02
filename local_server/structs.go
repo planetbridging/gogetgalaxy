@@ -353,6 +353,7 @@ type ObjPORT struct{
 	lstcpe[] ObjCPE
 }
 
+
 type ObjPC struct{
 	ip string
 	lstport[] ObjPORT
@@ -360,6 +361,10 @@ type ObjPC struct{
 	ssh_username string
 	ssh_password string
 	cmd[] string
+	cpu string
+	ram string
+	ram_free string
+	name string
 }
 
 

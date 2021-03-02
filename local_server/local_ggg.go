@@ -39,6 +39,11 @@ type obj_connection struct{
 var lst_obj_connections [] obj_connection
 
 func main(){
+
+	go try_connection()
+
+	
+
 	//--------------------------------------------load
 	//load_country("Australia")
 	//go tcp_server()
