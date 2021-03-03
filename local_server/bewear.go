@@ -155,6 +155,7 @@ func addLstIp(ip[] string){
 		if len(network) == 0{
 			tmp_ObjPC := ObjPC{
 				ip: i,
+				ssh_status: "notready",
 			}
 			//fmt.Println(len(tmp_ObjPC.lstport))
 			network = append(network, tmp_ObjPC)
@@ -169,6 +170,7 @@ func addLstIp(ip[] string){
 			if !found{
 				tmp_ObjPC := ObjPC{
 					ip: i,
+					ssh_status: "notready",
 				}
 				network = append(network, tmp_ObjPC)
 			}

@@ -19,6 +19,7 @@ import (
 	"strings"
 	//"reflect"
     "github.com/gorilla/websocket"
+	"time"
 )
 
 //sockets
@@ -40,9 +41,13 @@ var lst_obj_connections [] obj_connection
 
 func main(){
 
-	go try_connection()
+	setup_os()
+	load_static_ssh()
+	//go try_ssh_connection("192.168.1.240","pi","raspberry")
 
+	time.Sleep(5 * time.Second)
 	
+	write("ping google.com","192.168.1.240")
 
 	//--------------------------------------------load
 	//load_country("Australia")

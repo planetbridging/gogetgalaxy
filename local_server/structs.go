@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"io"
 )
 
 //----------------------------------------------nmap xml
@@ -354,10 +355,14 @@ type ObjPORT struct{
 }
 
 
+type ObjSSH struct {
+	ssin io.WriteCloser
+}
+
+
 type ObjPC struct{
 	ip string
 	lstport[] ObjPORT
-	ssh_status string
 	ssh_username string
 	ssh_password string
 	cmd[] string
@@ -365,7 +370,11 @@ type ObjPC struct{
 	ram string
 	ram_free string
 	name string
+	ssh ObjSSH
+	ssh_status string
 }
+
+
 
 
 //----------------------------------------------computer objs

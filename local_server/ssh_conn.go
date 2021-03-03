@@ -11,15 +11,28 @@ import (
 	"strings"
 )
 
-type SSHCommand struct {
-	ssin io.WriteCloser
+
+
+var sshcon ObjSSH
+
+func handleError(err error, ip string) {
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("connection failed: " + ip)
+		for n := range network {
+			if(network[n].ip == ip){
+				network[n].ssh_status = "broke"
+			}
+		}
+	}
 }
 
-var sshcon SSHCommand
-
-func handleError(err error) {
+func handleSessionError(err error, ip string) {
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		fmt.Println("connection failed: " + ip)
+	}else{
+		fmt.Println("connected to: " + ip)
 	}
 }
 
@@ -56,16 +69,26 @@ func readBuffForString(sshOut io.Reader) string {
 	return waitingString
 }
 
-func write(cmd string) {
-	_, err := sshcon.ssin.Write([]byte(cmd + "\r"))
-	handleError(err)
+func write(cmd string,ip string) {
+	//_, err := sshcon.ssin.Write([]byte(cmd + "\r"))
+	//handleError(err)
+	for n := range network {
+		fmt.Println(network[n].ssh_status + ":::ready")
+		fmt.Println(network[n].ip + ":::" + ip)
+		if(network[n].ssh_status == "ready" && network[n].ip == ip){
+			fmt.Println("sent--------------------------")
+			fmt.Fprintf(network[n].ssh.ssin, "%s\n", cmd)
+			
+			break
+		}
+	}
 }
 
-func try_connection() {
+func try_ssh_connection(ip string, u string, p string) {
 	// create a new connection
-	conn, err := cssh.Dial("tcp", "192.168.1.240:22", &cssh.ClientConfig{
-		User:            "",
-		Auth:            []cssh.AuthMethod{cssh.Password("")},
+	conn, err := cssh.Dial("tcp", ip + ":22", &cssh.ClientConfig{
+		User:            u,
+		Auth:            []cssh.AuthMethod{cssh.Password(p)},
 		HostKeyCallback: cssh.InsecureIgnoreHostKey(),
 		Timeout:         5 * time.Second,
 	})
@@ -74,26 +97,44 @@ func try_connection() {
 		fmt.Println(err)
 	}
 	session, err := conn.NewSession()
-	handleError(err)
-	sshOut, err := session.StdoutPipe()
-	handleError(err)
-	sshIn, err := session.StdinPipe()
-
+	handleSessionError(err, ip)
+	sshOut, Outerr := session.StdoutPipe()
+	handleError(Outerr, ip)
+	sshIn, Inerr := session.StdinPipe()
+	handleError(Inerr, ip)
 	err = session.Shell()
-	handleError(err)
+	handleError(err, ip)
 
-
-	sshcon := &SSHCommand{
-		ssin:  sshIn,
+	if(err != nil){
+		
+	}else{
+		fmt.Println("CONNECTED----------------------------")
+		tmp_Objssh := ObjSSH{
+			ssin: sshIn,
+		}
+		for n := range network {
+			if(network[n].ip == ip){
+				network[n].ssh_status = "ready"
+				network[n].ssh = tmp_Objssh
+			}
+		}
 	}
 
-	_ = sshcon
+	/*sshcon := &SSHCommand{
+		ssin:  sshIn,
+	}*/
+
+	//_ = sshcon
 
 	fmt.Println(reflect.TypeOf(sshIn))
-	fmt.Fprintf(sshIn, "%s\n", "ping google.com")
+	//fmt.Fprintf(sshIn, "%s\n", "ping google.com")
 	//write("configure", sshIn)
 	go readBuffForString(sshOut)
 
+	
+
+	
+	//write("ping google.com", "192.168.1.240")
 	//time.Sleep(5 * time.Second)
 
 	//sshIn.Write([]byte("ping google.com" + "\r"))
