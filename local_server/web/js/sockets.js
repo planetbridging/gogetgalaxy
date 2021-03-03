@@ -27,6 +27,11 @@ function send() {
  function second_update( )
  {
     socket.send("refresh");
+    var numItems = $('.computers').length;
+    if(numItems == 0){
+      console.log("reload computers");
+      socket.send("pagereload");
+    }
  }
 
 
@@ -35,12 +40,42 @@ function send() {
      var split2 = split1[1].split(",");
     if($("#Card" + split2[0] + "PC").length == 0) {
         //it doesn't exist
-        $("#LST_PC").append(template_pc_card(split2[0]));
+        append_pc(split1[1]);
     }
  }
 
- function template_pc_card(ip){
-	var pc_card = `<div class="col-lg-4 col-md-6 col-sm-12"><div id="Card`+ip+`PC" class="card text-white bg-secondary mb-3" style="width: 300px;">
+ function append_pc(data){
+   var ip = "";
+   var ssh = "";
+   if(data.includes(",")){
+   // console.log(data);
+    var datasplit = data.split(",");
+    ip = datasplit[0];
+    ssh = datasplit[1];
+   }else{
+    ip = data;
+   }
+
+
+   ip = ip.replace(" ","");
+
+   //var numItems = $('.Card' + ip + "PC").length;
+
+  var classcount = document.getElementsByClassName('Card' + ip + 'PC');
+   if(classcount.length == 0){
+      $("#LST_PC").append(template_pc_card(ip,ssh));
+   }
+
+ }
+
+ function template_pc_card(ip, ssh){
+   var bg = "";
+   if(ssh == "ready"){
+    bg = "bg-success";
+   }else{
+    bg = "bg-secondary";
+   }
+	var pc_card = `<div class="col-lg-4 col-md-6 col-sm-12 computers"><div class="Card`+ip+`PC card text-white `+bg+` mb-3" style="width: 300px;">
 <div class="card-header">`+ip+`</div>
 <div class="card-body">
   <h5 class="card-title"></h5>

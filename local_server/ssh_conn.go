@@ -36,7 +36,7 @@ func handleSessionError(err error, ip string) {
 	}
 }
 
-func readBuffForString(sshOut io.Reader) string {
+func readBuffForString(sshOut io.Reader, ip string) string {
 	buf := make([]byte, 1000)
 	n, err := sshOut.Read(buf) //this reads the ssh terminal
 	waitingString := ""
@@ -62,6 +62,13 @@ func readBuffForString(sshOut io.Reader) string {
 		if(strings.Contains(current, "64")){
 			fmt.Println("i found O____O")
 		}
+
+		for n := range network {
+			if(network[n].ip == ip){
+				network[n].cmd = append(network[n].cmd,current)
+				break
+			}
+		}
 	}
 
 	
@@ -69,7 +76,7 @@ func readBuffForString(sshOut io.Reader) string {
 	return waitingString
 }
 
-func write(cmd string,ip string) {
+func send_ssh_cmd(cmd string,ip string) {
 	//_, err := sshcon.ssin.Write([]byte(cmd + "\r"))
 	//handleError(err)
 	for n := range network {
@@ -116,6 +123,7 @@ func try_ssh_connection(ip string, u string, p string) {
 			if(network[n].ip == ip){
 				network[n].ssh_status = "ready"
 				network[n].ssh = tmp_Objssh
+				break
 			}
 		}
 	}
@@ -129,7 +137,7 @@ func try_ssh_connection(ip string, u string, p string) {
 	fmt.Println(reflect.TypeOf(sshIn))
 	//fmt.Fprintf(sshIn, "%s\n", "ping google.com")
 	//write("configure", sshIn)
-	go readBuffForString(sshOut)
+	go readBuffForString(sshOut, ip)
 
 	
 

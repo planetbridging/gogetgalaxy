@@ -19,7 +19,7 @@ import (
 	"strings"
 	//"reflect"
     "github.com/gorilla/websocket"
-	"time"
+	//"time"
 )
 
 //sockets
@@ -43,11 +43,12 @@ func main(){
 
 	setup_os()
 	load_static_ssh()
+	
 	//go try_ssh_connection("192.168.1.240","pi","raspberry")
 
-	time.Sleep(5 * time.Second)
+	//time.Sleep(5 * time.Second)
 	
-	write("ping google.com","192.168.1.240")
+	//write("ping google.com","192.168.1.240")
 
 	//--------------------------------------------load
 	//load_country("Australia")
@@ -85,13 +86,24 @@ func main(){
 						}*/
 						//xType := reflect.TypeOf(msg);
 						//fmt.Println(xType);
-						newmsg := []byte("pc: " + n.ip + ",")
+						newmsg := []byte("pc: " + n.ip + "," + n.ssh_status)
 						if err = conn.WriteMessage(msgType, newmsg); err != nil {
 							
 						}
 					}
 
 					findAll_status = "ready";
+				}
+			}
+
+			if(strings.HasPrefix(cmd,"pagereload")){
+
+				for _, n := range network {
+					//fmt.Println(n.ip);
+					newmsg := []byte("pc: " + n.ip + "," + n.ssh_status)
+					if err = conn.WriteMessage(msgType, newmsg); err != nil {
+						
+					}
 				}
 			}
 
