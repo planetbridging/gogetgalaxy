@@ -27,6 +27,7 @@ import (
     "bufio"
 	"io"
     "net"
+    "fmt"
 )
 
 type obj_connection struct{
@@ -49,7 +50,7 @@ type Response struct {
 var lst_obj_connections [] obj_connection
 
 var os_type = ""
-var found_server = "192.168.1.2"
+var found_server = ""
 
 //static nmap cmds
 //ping
@@ -104,6 +105,11 @@ func main(){
    
    //log.Println("Starting cpu nmap load test")
    //
+   
+    arg := os.Args[1]
+    
+    found_server = arg
+    fmt.Println("scanning tests on " + arg)
    setup_ggg_profile()
 }
 
@@ -236,13 +242,14 @@ func cpu_load_test(){
         try_amount := n * 20
         
         tmp_scan_ip := found_server
+        log.Printf("testing scans on " + tmp_scan_ip)
 
         if tmp_scan_ip == ""{
             tmp_scan_ip = "127.0.0.1"
         }
         //go test_time_out(try_amount)
         for c := 1; c <= try_amount; c++{
-            go cmd("nmap -sT -p- " + tmp_scan_ip)
+            go cmd("nmap -sT -p- -Pn " + tmp_scan_ip)
         }
         
     
